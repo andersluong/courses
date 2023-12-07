@@ -26,7 +26,12 @@ public:
     return returnId;
   }
 
-  row_type get(int id) { return db.at(id); }
+  row_type get(int id) {
+    if (!db.contains(id)) {
+      throw std::exception();
+    }
+    return db.at(id);
+  }
 
   void remove(int id) {
     for (auto it = db.begin(); it != db.end();) {
