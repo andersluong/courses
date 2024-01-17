@@ -66,10 +66,10 @@ std::string solve(std::string const& pattern1, std::string const& pattern2) {
       return "-";
     }
   }
-  // std::cout << "placeholder 1:" << std::endl;
-  // for (auto p: placeholders1) std::cout << p.first << ": " << p.second << std::endl;
-  // std::cout << "placeholder 2:" << std::endl;
-  // for (auto p: placeholders2) std::cout << p.first << ": " << p.second << std::endl;
+  std::cout << "placeholder 1:" << std::endl;
+  for (auto p: placeholders1) std::cout << p.first << ": " << p.second << std::endl;
+  std::cout << "placeholder 2:" << std::endl;
+  for (auto p: placeholders2) std::cout << p.first << ": " << p.second << std::endl;
   std::string result1, result2;
   for (unsigned i = 0; i < words1.size(); i++) {
     std::string word1 = words1[i];
@@ -82,24 +82,24 @@ std::string solve(std::string const& pattern1, std::string const& pattern2) {
       continue;
     }
     if (isPlaceholder(word1)) {
-      result1 += extractString(placeholders1[word1])[0] + " ";
+      result1 += placeholders1[word1] + " ";
     } else {
       result1 += word1 + " ";
     }
     if (isPlaceholder(word2)) {
-      result2 += extractString(placeholders2[word2])[0] + " ";
+      result2 += placeholders2[word2] + " ";
     } else {
       result2 += word2 + " ";
     }
   }
-  // std::cout << "content 1: " << result1 << std::endl;
-  // std::cout << "content 2: " << result2 << std::endl;
   if (result1 != result2) {
     if (result1.find('<') == std::string::npos && result2.find('<') == std::string::npos) {
       // done, but they don't match
       return "-";
     }
     // std::cout << "call again." << std::endl;
+    // std::cout << "content 1: " << result1 << std::endl;
+    // std::cout << "content 2: " << result2 << std::endl;
     result1 = solve(result1, result2) + " ";
   }
   result1.pop_back();
