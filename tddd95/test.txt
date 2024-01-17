@@ -12,7 +12,7 @@ Test case #2:
 a b c <tag>
 a b c
 how now brown <animal>
-<foo> now <color> <animal>
+<foo> now <color> <foo>
 test test1
 test1 test
 
@@ -23,5 +23,10 @@ Test case #3:
 
 Test case #4:
 1
-<1> <1>
-<2> good
+hey hey <heyyy>
+hey hey <hey>
+
+Test case #5:
+1
+<1> <2> <1> <2>
+c c c c
