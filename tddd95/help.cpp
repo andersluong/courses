@@ -1,21 +1,47 @@
+/**
+  Author: Anders Luong (andlu434)
+*/
 #include <iostream>
 #include <unordered_map>
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <iterator>
+
+/**
+
+Test case:
+5
+how now brown <animal>
+<foo> now <color> cow
+who are you
+<a> <b> <a>
+<a> b
+c <a>
+a b c <tag>
+a b c
+how now brown <animal>
+<foo> now <color> <animal>
+
+*/
 
 bool addPlaceholder(std::unordered_map<std::string, std::string> &placeholders, std::istringstream &iss1, std::istringstream &iss2) {
   std::string word1, word2;
   while (iss1 >> word1) {
-    iss2 >> word2;
+    if (!(iss2 >> word2)) {
+      return false;
+    }
     if (word1[0] == '<') {
-      if (placeholders.contains(word1)) {
+      if (placeholders.find(word1) != placeholders.end()) {
         if (placeholders[word1] != word2) {
           return false;
         }
       }
       placeholders[word1] = word2;
     }
+  }
+  if (iss2 >> word2) {
+    return false;
   }
   return true;
 }
@@ -39,11 +65,16 @@ std::string solve(std::string const& pattern1, std::string const& pattern2) {
   iss1.seekg(0, std::ios::beg);
   while (iss1 >> word) {
     if (word[0] == '<') {
-      result += placeholders1[word] + " ";
+      if (placeholders1[word][0] == '<') {
+        result += word.substr(1, word.length() - 2) + " ";
+      } else {
+        result += placeholders1[word] + " ";
+      }
     } else {
       result += word + " ";
     }
   }
+  result.pop_back();
   return result;
 }
 
