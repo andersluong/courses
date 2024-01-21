@@ -7,24 +7,25 @@ int main() {
   std::cin.tie(NULL);
   std::string input1, input2;
   std::cin >> input1 >> input2;
-  unsigned candies = std::stoi(input1);
-  unsigned kids = std::stoi(input2);
-  unsigned wanted = 0;
-  std::set<unsigned> kids_wanted;
-  for (unsigned i = 0; i < kids; i++) {
+  unsigned long long candies = std::stoi(input1);
+  unsigned long long kids = std::stoi(input2);
+  unsigned long long wanted = 0;
+  std::set<unsigned long long> kids_wanted;
+  for (unsigned long long i = 0; i < kids; i++) {
     std::cin >> input1;
-    unsigned kid = std::stoi(input1);
+    unsigned long long kid = std::stoi(input1);
     wanted += kid;
     kids_wanted.insert(kid);
   }
   
-  unsigned difference = wanted - candies;
-  unsigned index = 0;
-  unsigned angryPoints = 0;
-  std::for_each(kids_wanted.begin(), kids_wanted.end(), [&](unsigned const kid) {
-    unsigned a = difference / (kids - index);
-    unsigned used = kid < a ? kid : a;
+  unsigned long long difference = wanted - candies;
+  unsigned long long index = 0;
+  unsigned long long angryPoints = 0;
+  std::for_each(kids_wanted.begin(), kids_wanted.end(), [&](unsigned long long const kid) mutable {
+    unsigned long long a = difference / (kids - index);
+    unsigned long long used = kid < a ? kid : a;
     // std::cout << "used: " << used << "\n";
+    std::cout << "index: " << index << "\n";
     angryPoints += (used * used);
     difference -= used;
     index++;
