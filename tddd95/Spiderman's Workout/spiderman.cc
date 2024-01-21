@@ -16,49 +16,33 @@ void solve(worldMapType<int> &worldMap, worldMapType<std::string> &directionMap,
   worldMap[0][instructions[0]] = instructions[0];
   directionMap[0][instructions[0]] = "U";
 
-  for (int index = 1; index < instructions.size(); index++) {
+  for (unsigned index = 1; index < instructions.size(); index++) {
     auto instruction = instructions[index];
     auto prevInstructions = worldMap[index - 1];
-    for (int prevIndex = 0; prevIndex < prevInstructions.size(); prevIndex++) {
+    for (unsigned prevIndex = 0; prevIndex < prevInstructions.size(); prevIndex++) {
       int prevInstruction = prevInstructions[prevIndex];
       if (prevInstruction == UNDEFINED) {
         continue;
       }
-      int moveDown = prevInstruction - instruction;
-      int moveUp = prevInstruction + instruction;
-      if (moveDown > 0) {
-        worldMap[index][moveDown] = std::max(moveDown, prevInstruction);
-        directionMap[index][moveDown] = "D";
+      int moveDown = prevIndex - instruction;
+      int moveUp = prevIndex + instruction;
+      if (moveDown >= 0) {
+        if (worldMap[index][moveDown] > moveDown) {
+          worldMap[index][moveDown] = std::min((int)prevIndex, worldMap[index][moveDown]);
+        } else {
+          worldMap[index][moveDown] = std::max(moveDown, prevInstruction);
+          directionMap[index][moveDown] = "D";
+        }
       }
-      worldMap[index][moveUp] = std::max(moveUp, prevInstruction);
-      directionMap[index][moveUp] = "U";
+      if (worldMap[index][moveUp] > moveUp) {
+        worldMap[index][moveUp] = std::min((int)prevIndex, worldMap[index][moveUp]);
+      } else {
+        worldMap[index][moveUp] = std::max(moveUp, prevInstruction);
+        directionMap[index][moveUp] = "U";
+      }
     }
     
   }
-  // if (currentHeight < 0) {
-  //   return IMPOSSIBLE;
-  // }
-  // if (currentHeight == heights.size() - 1) {
-  //   return 0;
-  // }
-  // if (worldMap[index][currentHeight] != UNDEFINED) {
-  //   return worldMap[index][currentHeight];
-  // }
-  // int instructionHeight = heights[index];
-  // int moveDown = solve(worldMap, directionMap, heights, currentHeight - instructionHeight, index + 1);
-  // int moveUp = solve(worldMap, directionMap, heights, currentHeight + instructionHeight, index + 1);
-  // std::cout << "index: " << index << " currentHeight: " << currentHeight << " moveDown: " << moveDown << " moveUp: " << moveUp << std::endl;
-  // if (moveDown < moveUp) {
-  //   int choice = std::max(currentHeight, moveDown);
-  //   worldMap[index][currentHeight] = choice;
-  //   directionMap[index][currentHeight] = "D";
-  //   return choice;
-  // } else {
-  //   int choice = std::max(currentHeight, moveUp);
-  //   worldMap[index][currentHeight] = choice;
-  //   directionMap[index][currentHeight] = "U";
-  //   return choice;
-  // }
 
 }
 
@@ -88,51 +72,41 @@ int main() {
 
     // solve
     solve(worldMap, directionMap, heights);
-    for (int row = 0; row < numberOfInstructions; row++) {
-      std::cout << "[ ";
-      for (int col = 0; col < 20; col++) {
-        std::cout << worldMap[row][col] << " ";
-      }
-      std::cout << "]\n";
+    // for (int row = 0; row < numberOfInstructions; row++) {
+    //   std::cout << row << ": [ ";
+    //   for (int col = 0; col <= 20; col++) {
+    //     std::cout << col << ": " << worldMap[row][col] << " ";
+    //   }
+    //   std::cout << "]\n";
+    // }
+    // for (int row = 0; row < numberOfInstructions; row++) {
+    //   std::cout << row << ": [ ";
+    //   for (int col = 0; col <= 20; col++) {
+    //     std::cout << col << ": " << directionMap[row][col] << " ";
+    //   }
+    //   std::cout << "]\n";
+    // }
+
+    auto lastInstruction = worldMap[numberOfInstructions - 1];
+    if (lastInstruction[0] == UNDEFINED) {
+      std::cout << "IMPOSSIBLE\n";
+      continue;
     }
 
-    // find smallest result
-    int inf = std::numeric_limits<int>::max();
-    int smallestIndex = inf;
-    int shortestDistance = inf;
-    auto lastInstruction = worldMap[numberOfInstructions - 1];
-    for (int index = 0; index < lastInstruction.size(); index++) {
-      if (lastInstruction[index] != UNDEFINED) {
-        if (lastInstruction[index] < shortestDistance) {
-          std::cout << "lastInstruction[" << index << "]: " << lastInstruction[index] << std::endl;
-          shortestDistance = lastInstruction[index];
-          smallestIndex = index;
-        }
-      }
-    }
-    std::cout << "smallestIndex: " << smallestIndex << std::endl;
-    std::string result;
+    std::string path;
+    int backTrackIndex = 0;
 
     // backtrack
     for (int index = numberOfInstructions - 1; index >= 0; index--) {
-      result += directionMap[index][smallestIndex];
-      if (directionMap[index][smallestIndex] == "D") {
-        smallestIndex -= heights[index];
+      path = directionMap[index][backTrackIndex] + path;
+      if (directionMap[index][backTrackIndex] == "D") {
+        backTrackIndex += heights[index];
       } else {
-        smallestIndex += heights[index];
+        backTrackIndex -= heights[index];
       }
     }
-    std::reverse(result.begin(), result.end());
-    std::cout << result << "\n";
-    // for (int instruction = 0; instruction < numberOfInstructions; instruction++) {
-    //   result += directionMap[instruction][moved];
-    //   if (directionMap[instruction][moved] == "D") {
-    //     height -= heights[instruction];
-    //   } else {
-    //     height += heights[instruction];
-    //   }
-    // }
-    // std::cout << result << "\n";
+
+    std::cout << path << "\n";
   }
 
 }
