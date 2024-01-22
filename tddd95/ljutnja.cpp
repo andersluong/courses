@@ -1,35 +1,36 @@
 #include <iostream>
-#include <set>
+#include <vector>
 #include <algorithm>
+#include <cmath>
 
 int main() {
   std::ios::sync_with_stdio(false);
   std::cin.tie(NULL);
-  std::string input1, input2;
-  std::cin >> input1 >> input2;
-  unsigned long long candies = std::stoi(input1);
-  unsigned long long kids = std::stoi(input2);
-  unsigned long long wanted = 0;
-  std::set<unsigned long long> kids_wanted;
-  for (unsigned long long i = 0; i < kids; i++) {
-    std::cin >> input1;
-    unsigned long long kid = std::stoi(input1);
-    wanted += kid;
-    kids_wanted.insert(kid);
+  unsigned candiesAvailable; // M from kattis
+  unsigned kids; // N from kattis
+  std::cin >> candiesAvailable >> kids;
+
+  std::vector<unsigned> candiesWishlist;
+  unsigned long long totalCandies = 0;
+  for (unsigned i = 0; i < kids; i++) {
+    unsigned kidWants;
+    std::cin >> kidWants;
+    totalCandies += kidWants;
+    candiesWishlist.push_back(kidWants);
   }
+
+  std::sort(candiesWishlist.begin(), candiesWishlist.end());
   
-  unsigned long long difference = wanted - candies;
-  unsigned long long index = 0;
+  unsigned long long candiesLeft = totalCandies - candiesAvailable;
   unsigned long long angryPoints = 0;
-  std::for_each(kids_wanted.begin(), kids_wanted.end(), [&](unsigned long long const kid) mutable {
-    unsigned long long a = difference / (kids - index);
-    unsigned long long used = kid < a ? kid : a;
-    // std::cout << "used: " << used << "\n";
-    std::cout << "index: " << index << "\n";
-    angryPoints += (used * used);
-    difference -= used;
-    index++;
-  });
+
+  // candies left to give out. We want to distribute them evenly so less kids are angry
+  for (unsigned i = 0; i < candiesWishlist.size(); i++) {
+    double check = (double)candiesLeft / (kids - i);
+    unsigned long long candiesToGive = std::min((unsigned)std::floor(check), candiesWishlist[i]);
+    angryPoints += candiesToGive * candiesToGive;
+    candiesLeft -= candiesToGive;
+  }
   std::cout << angryPoints << "\n";
   
   /*
