@@ -4,7 +4,7 @@
 #include <algorithm>
 
 template <typename T>
-using worldMapType = std::array<std::array<T, 1000>, 40>;
+using worldMapType = std::array<std::array<T, 1001>, 40>;
 
 static const int UNDEFINED = -1;
 
@@ -21,35 +21,35 @@ void solve(worldMapType<int> &worldMap, worldMapType<std::string> &directionMap,
       if (prevInstruction == UNDEFINED) {
         continue;
       }
-      int moveDown = prevIndex - instruction;
-      int moveUp = prevIndex + instruction;
+      int moveDownIndex = prevIndex - instruction;
+      int moveUpIndex = prevIndex + instruction;
 
       // check down branch
-      if (moveDown >= 0) {
-        if (worldMap[index][moveDown] >= moveDown) {
-          if ((int)prevIndex < worldMap[index][moveDown]) {
+      if (moveDownIndex >= 0) {
+        if (worldMap[index][moveDownIndex] != UNDEFINED) {
+          if (prevInstruction < worldMap[index][moveDownIndex]) {
             // found a smaller path, update it
-            worldMap[index][moveDown] = prevIndex;
-            directionMap[index][moveDown] = "D";
+            worldMap[index][moveDownIndex] = prevInstruction;
+            directionMap[index][moveDownIndex] = "D";
           }
         } else {
           // new path
-          worldMap[index][moveDown] = std::max(moveDown, prevInstruction);
-          directionMap[index][moveDown] = "D";
+          worldMap[index][moveDownIndex] = std::max(moveDownIndex, prevInstruction);
+          directionMap[index][moveDownIndex] = "D";
         }
       }
 
       // check up branch
-      if (worldMap[index][moveUp] >= moveUp) {
-        if ((int)prevIndex < worldMap[index][moveUp]) {
+      if (worldMap[index][moveUpIndex] != UNDEFINED) {
+        if (prevInstruction < worldMap[index][moveUpIndex]) {
           // found a smaller path, update it
-          worldMap[index][moveUp] = prevIndex;
-          directionMap[index][moveUp] = "U";
+          worldMap[index][moveUpIndex] = prevInstruction;
+          directionMap[index][moveUpIndex] = "U";
         }
       } else {
         // new path
-        worldMap[index][moveUp] = std::max(moveUp, prevInstruction);
-        directionMap[index][moveUp] = "U";
+        worldMap[index][moveUpIndex] = std::max(moveUpIndex, prevInstruction);
+        directionMap[index][moveUpIndex] = "U";
       }
     }
   }
@@ -73,7 +73,7 @@ int main() {
 
     // init
     worldMapType<int> worldMap;
-    std::array<int, 1000> distances;
+    std::array<int, 1001> distances;
     std::fill(distances.begin(), distances.end(), UNDEFINED);
     std::fill_n(worldMap.begin(), numberOfInstructions, distances);
     // used for knowing if we should go up or down
@@ -81,20 +81,20 @@ int main() {
 
     // solve
     solve(worldMap, directionMap, heights);
-    for (int row = 0; row < numberOfInstructions; row++) {
-      std::cout << row << ": [ ";
-      for (int col = 0; col <= 20; col++) {
-        std::cout << "(" << col << ": " << worldMap[row][col] << ") ";
-      }
-      std::cout << "]\n";
-    }
-    for (int row = 0; row < numberOfInstructions; row++) {
-      std::cout << row << ": [ ";
-      for (int col = 0; col <= 20; col++) {
-        std::cout << "(" << col << ": " << directionMap[row][col] << ") ";
-      }
-      std::cout << "]\n";
-    }
+    // for (int row = 0; row < numberOfInstructions; row++) {
+    //   std::cout << row << ": [ ";
+    //   for (int col = 0; col <= 20; col++) {
+    //     std::cout << "(" << col << ": " << worldMap[row][col] << ") ";
+    //   }
+    //   std::cout << "]\n";
+    // }
+    // for (int row = 0; row < numberOfInstructions; row++) {
+    //   std::cout << row << ": [ ";
+    //   for (int col = 0; col <= 20; col++) {
+    //     std::cout << "(" << col << ": " << directionMap[row][col] << ") ";
+    //   }
+    //   std::cout << "]\n";
+    // }
 
     auto lastInstruction = worldMap[numberOfInstructions - 1];
     if (lastInstruction[0] == UNDEFINED) {
