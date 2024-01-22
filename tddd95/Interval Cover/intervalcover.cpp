@@ -1,142 +1,85 @@
 #include <iostream>
 #include <vector>
-#include <array>
 #include <limits>
+#include <string>
+#include <algorithm>
 
-const int infinity = std::numeric_limits<int>::max();
+const static int INF = std::numeric_limits<int>::max();
+const static int END_OF_INPUT = -999;
 
 struct Interval {
-  Interval() : lower{infinity}, upper{-infinity}, coverage{} {}
-  Interval(double lower, double upper) : lower{lower}, upper{upper}, coverage{upper - lower} {}
-  Interval(Interval const& other) : lower{other.lower}, upper{other.upper}, coverage{other.coverage} {}
-  Interval& operator=(Interval const& other) {
-    lower = other.lower;
-    upper = other.upper;
-    coverage = other.coverage;
-    return *this;
-  }
-
-  double lower, upper, coverage;
+  double lower, upper;
+  int index;
 };
 
-struct MainInterval : public Interval {
-
-  double distanceCovered(Interval const& other) const {
-    if (other.lower <= lower && other.upper >= upper) {
-      // full coverage
-      return coverage;
-    } else if (other.lower <= lower && other.upper <= lower) {
-      // overlapping from left
-      return other.upper - lower;
-    } else if (other.lower >= lower && other.upper >= upper) {
-      // overlapping from right
-      return upper - other.lower;
-    } else if (other.lower >= lower && other.upper <= upper) {
-      // inside of the interval
-      return other.coverage;
-    } else {
-      // no coverage
-      return 0;
-    }
-  }
-
-  bool isFullyCovered(std::vector<Interval> const& intervals) const {
-    // std::cout << "checking if fully covered\n";
-    // for (auto interval : intervals) {
-    //   std::cout << "interval: " << interval.lower << " " << interval.upper << "\n";
-    // }
-    // std::cout << "main interval: " << lower << " " << upper << "\n";
-    double lowerBound = infinity;
-    double upperBound = -infinity;
-    for (auto interval : intervals) {
-      if (interval.lower < lowerBound) {
-        lowerBound = interval.lower;
-      } 
-      if (interval.upper > upperBound) {
-        upperBound = interval.upper;
-      }
-    }
-    // std::cout << "lower bound: " << lowerBound << ". upper bound: " << upperBound << "\n";
-    if (lowerBound <= lower && upperBound >= upper) {
-      return true;
-    }
-    return false;
-  }
-};
-
-int findLargestCoveringInterval(MainInterval const& mainInterval, std::array<Interval, 20000> const& intervals, int numberOfIntervals) {
-  int largestCoveringIntervalIndex{-1};
-  double covered{};
-  for (int i = 0; i < numberOfIntervals; i++) {
-    if (intervals[i].lower == infinity) {
-      // interval has been removed
-      continue;
-    }
-    double currentCovered = mainInterval.distanceCovered(intervals[i]);
-    if (currentCovered > covered) {
-        covered = currentCovered;
-        largestCoveringIntervalIndex = i;
-    }
-  }
-  return largestCoveringIntervalIndex;
-}
-
-Interval readInterval() {
+Interval readInterval(int i) {
   std::string input;
   if (!(std::cin >> input)) {
-    return Interval{};
+    return Interval{ 0, 0, END_OF_INPUT  };
   }
   double lower = std::stod(input);
   if (!(std::cin >> input)) {
-    return Interval{};
+    return Interval{ 0, 0, END_OF_INPUT };
   }
   double upper = std::stod(input);
-  return Interval{ lower, upper };
+  return Interval{ lower, upper, i };
 }
 
 bool solveTestcase() {
-  MainInterval mainInterval{ readInterval() };
-  if (mainInterval.lower == INT_MAX) {
+  Interval mainInterval{ readInterval(-1) };
+  if (mainInterval.index == END_OF_INPUT) {
     return false;
   }
 
-  std::array<Interval, 20000> intervals;
+  // https://www.geeksforgeeks.org/minimum-number-of-intervals-to-cover-the-target-interval/
+  std::vector<Interval> intervals;
   std::string input;
   std::cin >> input;
   int numberOfIntervals = std::stoi(input);
   for (int i = 0; i < numberOfIntervals; i++) {
-    intervals[i] = readInterval();
+    intervals.push_back(readInterval(i));
   }
+  intervals.push_back(Interval{ INF, INF, numberOfIntervals });
 
-  // special case when lower and upper are the same
-  if (mainInterval.lower == mainInterval.upper) {
-    for (int i = 0; i < numberOfIntervals; i++) {
-      Interval interval = intervals[i];
-      if (interval.lower <= mainInterval.lower && interval.upper >= mainInterval.upper) {
-        std::cout << "1\n" << i << "\n";
-        return true;
-      }
-    }
+  // sort on starting point
+  auto comparator = [](Interval const& interval1, Interval const& interval2){ return interval1.lower < interval2.lower; };
+  std::sort(intervals.begin(), intervals.end(), comparator);
+
+  std::string chosenIndexes;
+  double start = mainInterval.lower;
+  double end = mainInterval.lower - 1;
+  int count = 0;
+  unsigned i = 0;
+  // special case when no intervals cover start
+  if (intervals[0].lower > start) {
     std::cout << "impossible\n";
     return true;
   }
-
-  std::string chosenIndexes;
-  std::vector<Interval> chosenIntervals;
-  while (!mainInterval.isFullyCovered(chosenIntervals)) {
-    int largestCoveringIntervalIndex = findLargestCoveringInterval(mainInterval, intervals, numberOfIntervals);
-    if (largestCoveringIntervalIndex == -1) {
-      std::cout << "impossible\n";
-      return true;
+  while (i < intervals.size()) {
+    Interval interval = intervals[i];
+    // std::cout << "interval: " << interval.lower << " " << interval.upper << std::endl;
+    if (interval.lower <= start) {
+      end = std::max(end, interval.upper);
+      i++;
+    } else {
+      start = end;
+      count++;
+      chosenIndexes += std::to_string(intervals[i-1].index) + " ";
+      // std::cout << chosenIndexes << std::endl;
+      // std::cout << "interval: " << intervals[i-1].lower << " " << intervals[i-1].upper << std::endl;
+      if (interval.lower > end || end >= mainInterval.upper) {
+        break;
+      }
     }
-    Interval largestCoveringInterval = intervals[largestCoveringIntervalIndex];
-    intervals[largestCoveringIntervalIndex] = Interval{}; // remove interval from list
-    // std::cout << "current largest interval: " << largestCoveringInterval.lower << " " << largestCoveringInterval.upper << "\n";
-    chosenIntervals.push_back(largestCoveringInterval);
-    chosenIndexes += std::to_string(largestCoveringIntervalIndex) + " ";
   }
-  std::cout << chosenIntervals.size() << "\n";
+  if (end < mainInterval.upper) {
+    std::cout << "impossible\n";
+    return true;
+  }
+  chosenIndexes.pop_back();
+  std::cout << count << "\n";
   std::cout << chosenIndexes << "\n";
+
   return true;
 }
 
