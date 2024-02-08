@@ -1,29 +1,26 @@
 #include <iostream>
-#include <vector>
 #include <set>
+#include <utility>
+#include <vector>
 #include <map>
-#include <queue>
-
 
 struct Edge {
-  Edge(int const weight, int const toNode) : weight{weight}, toNode{toNode} {}
   int weight;
   int toNode;
 };
 
 class Node {
 public:
-  Node (int cost = -1) : cost{cost} {}
   ~Node() {
     for (auto edge : edges) {
       delete edge;
     }
   }
-  void addNeighbor(Edge *edge) {
-    edges.insert(edge);
+  void addEdge(Edge *edge) {
+    edges.push_back(edge);
   }
 
-  std::set<Edge*> getEdges() {
+  std::vector<Edge*> getEdges() {
     return edges;
   }
 
@@ -31,7 +28,7 @@ public:
   Node* previous;
   bool visited;
 private:
-  std::set<Edge*> edges;
+  std::vector<Edge*> edges;
 };
 
 class Graph {
@@ -61,35 +58,35 @@ public:
   //   nodes[index] = node;
   // }
 
-  std::map<int, Node*> getNodes() {
-    return nodes;
+  void resetData() {
+    for (auto node : nodes) {
+      node.second->cost = -1;
+      node.second->visited = false;
+      node.second->previous = nullptr;
+    }
   }
 private:
   std::map<int, Node*> nodes;
 };
 
-struct Compare {
-  bool operator() (Node* a, Node* b) {
-    return a->cost > b->cost;
-  }
-};
+// struct Compare {
+//   bool operator() (Node* a, Node* b) {
+//     return a->cost > b->cost;
+//   }
+// };
 
 void dijkstra(Graph &graph, Node* startNode) {
+  graph.resetData();
   // std::vector<Node*> path;
-  std::priority_queue<Node*, std::vector<Node*>, Compare> queue;
-
-  for (auto node : graph.getNodes()) {
-    node.second->cost = -1;
-    node.second->visited = false;
-    node.second->previous = nullptr;
-  }
+  // std::priority_queue<Node*, std::vector<Node*>, Compare> queue;
+  std::set<std::pair<int, Node*>> queue;
 
   startNode->cost = 0;
-  queue.push(startNode);
+  queue.insert({0, startNode});
 
   while (!queue.empty()) {
-    Node* currentNode = queue.top();
-    queue.pop();
+    Node* currentNode = queue.begin()->second;
+    queue.erase(queue.begin());
 
     if (currentNode->visited) {
       continue;
@@ -114,7 +111,7 @@ void dijkstra(Graph &graph, Node* startNode) {
       if (neighbor->cost == -1 || newDistance < neighbor->cost) {
         neighbor->cost = newDistance;
         neighbor->previous = currentNode;
-        queue.push(neighbor);
+        queue.insert({newDistance, neighbor});
       }
     }
   }
@@ -147,13 +144,13 @@ int main() {
       if (!graph.hasNode(from)) {
         Node* fromNode = new Node();
         Edge* edge = new Edge{weight, to};
-        fromNode->addNeighbor(edge);
+        fromNode->addEdge(edge);
         
         graph.addNode(from, fromNode);
       } else {
         Edge* edge = new Edge{weight, to};
         Node* fromNode = graph.getNode(from);
-        fromNode->addNeighbor(edge);
+        fromNode->addEdge(edge);
         // graph.updateNode(from, fromNode);
       }
 
@@ -174,6 +171,7 @@ int main() {
       if (graph.hasNode(query)) {
         Node* endNode = graph.getNode(query);
         if (endNode->cost == -1) {
+          // end node exists but is not reachable
           std::cout << "Impossible" << "\n";
           continue;
         }
