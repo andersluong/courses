@@ -1,14 +1,24 @@
+/**
+* This uses Dijkstra's algorithm to find the shortest path from a start node to all other nodes in a graph.
+* The time complexity is O((V + E) * log(V)) where V is the number of vertices and E is the number of edges.
+* The solution to this problem is heavily inspired by lab 8 from the course TDDD86.
+*
+* Author: Anders Luong (andlu434)
+*/
 #include <iostream>
 #include <set>
 #include <utility>
 #include <vector>
 #include <map>
+#include <algorithm>
 
+// An edge representing a connection between two nodes
 struct Edge {
   int weight;
   int toNode;
 };
 
+// A node representing a vertex in the graph
 class Node {
 public:
   ~Node() {
@@ -16,21 +26,47 @@ public:
       delete edge;
     }
   }
-  void addEdge(Edge *edge) {
+
+  void addEdge(Edge* const edge) {
     edges.push_back(edge);
   }
 
-  std::vector<Edge*> getEdges() {
+  std::vector<Edge*> getEdges() const {
     return edges;
   }
 
-  int cost;
-  Node* previous;
-  bool visited;
+  void setCost(int const newCost) {
+    cost = newCost;
+  }
+
+  int getCost() const {
+    return cost;
+  }
+
+  void setPrevious(Node* const newPrevious) {
+    previous = newPrevious;
+  }
+
+  Node* getPrevious() const {
+    return previous;
+  }
+
+  void setVisited(bool const newVisited) {
+    visited = newVisited;
+  }
+
+  bool isVisited() const {
+    return visited;
+  }
+
 private:
   std::vector<Edge*> edges;
+  Node* previous;
+  int cost;
+  bool visited;
 };
 
+// A graph of all nodes
 class Graph {
 public:
   ~Graph() {
@@ -39,82 +75,77 @@ public:
     }
   }
 
-  void addNode(int const index, Node *node) {
+  void addNode(int const index, Node* const node) {
     nodes[index] = node;
   }
 
-  bool hasNode(int const index) {
+  bool hasNode(int const index) const {
     return nodes.find(index) != nodes.end();
   }
 
-  Node* getNode(int const index) {
+  Node* getNode(int const index) const {
     if (!hasNode(index)) {
       throw std::runtime_error("Node does not exist");
     }
-    return nodes[index];
+    return nodes.at(index);
   }
 
-  // void updateNode(int const index, Node *node) {
-  //   nodes[index] = node;
-  // }
-
+  // resets the nodes in the graph to their initial state
   void resetData() {
     for (auto node : nodes) {
-      node.second->cost = -1;
-      node.second->visited = false;
-      node.second->previous = nullptr;
+      node.second->setCost(-1);
+      node.second->setVisited(false);
+      node.second->setPrevious(nullptr);
     }
   }
 private:
   std::map<int, Node*> nodes;
 };
 
-// struct Compare {
-//   bool operator() (Node* a, Node* b) {
-//     return a->cost > b->cost;
-//   }
-// };
-
-void dijkstra(Graph &graph, Node* startNode) {
+void dijkstra(Graph &graph, Node* const startNode) {
   graph.resetData();
   // std::vector<Node*> path;
   // std::priority_queue<Node*, std::vector<Node*>, Compare> queue;
   std::set<std::pair<int, Node*>> queue;
 
-  startNode->cost = 0;
+  startNode->setCost(0);
   queue.insert({0, startNode});
 
   while (!queue.empty()) {
     Node* currentNode = queue.begin()->second;
     queue.erase(queue.begin());
 
-    if (currentNode->visited) {
+    if (currentNode->isVisited()) {
       continue;
     }
 
-    currentNode->visited = true;
-
-    // if (currentNode == endNode) {
-    //   while (currentNode != nullptr) {
-    //     path.push_back(currentNode);
-    //     currentNode = currentNode->previous;
-    //   }
-    //   return path;
-    // }
+    currentNode->setVisited(true);
 
     for (auto edge : currentNode->getEdges()) {
       Node* neighbor = graph.getNode(edge->toNode);
-      if (neighbor->visited) {
+      if (neighbor->isVisited()) {
         continue;
       }
-      int newDistance = currentNode->cost + edge->weight;
-      if (neighbor->cost == -1 || newDistance < neighbor->cost) {
-        neighbor->cost = newDistance;
-        neighbor->previous = currentNode;
+      int newDistance = currentNode->getCost() + edge->weight;
+      if (neighbor->getCost() == -1 || newDistance < neighbor->getCost()) {
+        neighbor->setCost(newDistance);
+        neighbor->setPrevious(currentNode);
         queue.insert({newDistance, neighbor});
       }
     }
   }
+}
+
+// Build up the path from the start node to the end node, as requrested by the course
+std::vector<Node*> buildPath(Node* const startNode, Node* endNode) {
+  std::vector<Node*> path;
+  while (endNode != startNode) {
+    path.push_back(endNode);
+    endNode = endNode->getPrevious();
+  }
+  path.push_back(startNode);
+  std::reverse(path.begin(), path.end());
+  return path;
 }
 
 int main() {
@@ -170,12 +201,12 @@ int main() {
       std::cin >> query;
       if (graph.hasNode(query)) {
         Node* endNode = graph.getNode(query);
-        if (endNode->cost == -1) {
+        if (endNode->getCost() == -1) {
           // end node exists but is not reachable
           std::cout << "Impossible" << "\n";
           continue;
         }
-        std::cout << endNode->cost << "\n";
+        std::cout << endNode->getCost() << "\n";
       } else {
         // end node doesn't exist, this solution is not possible
         std::cout << "Impossible" << "\n";
@@ -184,3 +215,4 @@ int main() {
     std::cout << "\n";
   }
 }
+
