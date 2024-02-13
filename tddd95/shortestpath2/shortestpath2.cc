@@ -1,5 +1,6 @@
 /**
 * This uses Dijkstra's algorithm to find the shortest path from a start node to all other nodes in a graph.
+* Almost the same as shortest path 1, but with added logic for waiting time.
 * The time complexity is O((V + E) * log(V)) where V is the number of vertices and E is the number of edges.
 * The solution to this problem is heavily inspired by lab 8 from the course TDDD86.
 *
@@ -137,9 +138,9 @@ void dijkstra(Graph &graph, Node* const startNode) {
       } else if (edge->nextTime == 0) {
         // this node cannot be accesed anymore
         continue;
-      } else if (currentNode->getCost() - edge->startTime % edge->nextTime > 0) {
+      } else if ((currentNode->getCost() - edge->startTime) % edge->nextTime > 0) {
         // we need to wait for the next time slot to access the neighbor
-        addedWaitTime = edge->nextTime - (currentNode->getCost() - edge->startTime) % edge->nextTime;
+        addedWaitTime = edge->nextTime - ((currentNode->getCost() - edge->startTime) % edge->nextTime);
       }
 
       int newDistance = currentNode->getCost() + edge->weight + addedWaitTime;
