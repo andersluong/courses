@@ -18,7 +18,7 @@ struct Edge {
   int weight; // d
   int toNode; // v
   int startTime; // t0
-  int nextTime; // P
+  int P; // P
 };
 
 // A node representing a vertex in the graph
@@ -135,12 +135,12 @@ void dijkstra(Graph &graph, Node* const startNode) {
       if (currentNode->getCost() <= edge->startTime) {
         // to access the neighbor, we need to wait since the start time hasn't started yet
         addedWaitTime = edge->startTime - currentNode->getCost();
-      } else if (edge->nextTime == 0) {
+      } else if (edge->P == 0) {
         // this node cannot be accesed anymore
         continue;
-      } else if ((currentNode->getCost() - edge->startTime) % edge->nextTime > 0) {
+      } else if ((currentNode->getCost() - edge->startTime) % edge->P > 0) {
         // we need to wait for the next time slot to access the neighbor
-        addedWaitTime = edge->nextTime - ((currentNode->getCost() - edge->startTime) % edge->nextTime);
+        addedWaitTime = edge->P - ((currentNode->getCost() - edge->startTime) % edge->P);
       }
 
       int newDistance = currentNode->getCost() + edge->weight + addedWaitTime;
