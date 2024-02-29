@@ -13,10 +13,25 @@
 #include <iostream>
 #include <vector>
 
+// Namespace where all the union find functions are stored
+namespace UnionFind {
+
 struct UnionSet {
   int parent;
   int size;
 };
+
+// Initialize the union find data structure
+std::vector<UnionSet> initUnionFind(int const numberOfElements) {
+  std::vector<UnionSet> unions;
+
+  for (int i = 0; i < numberOfElements; i++) {
+    UnionSet u { i, 1 };
+    unions.push_back(u);
+  }
+
+  return unions;
+}
 
 // Find the root of the set that an element is in
 int find(int const a, std::vector<UnionSet> & unions) {
@@ -61,22 +76,18 @@ bool same(int const a, int const b, std::vector<UnionSet>& unions) {
   return find(a, unions) == find(b, unions);
 }
 
+}; // namespace UnionFind
 
 int main() {
   std::ios::sync_with_stdio(false);
   std::cin.tie(NULL);
 
-  std::vector<UnionSet> unions;
 
   int numberOfElements, numberOfOperations;
   std::cin >> numberOfElements >> numberOfOperations;
 
   // Initialize the unions
-  for (int i = 0; i < numberOfElements; i++) {
-    // All elements start off as their own parent and the union size is 1
-    UnionSet u { i, 1 };
-    unions.push_back(u);
-  }
+  auto unions = UnionFind::initUnionFind(numberOfElements);
 
   // Perform the operations
   for (int i = 0; i < numberOfOperations; i++) {
@@ -86,10 +97,10 @@ int main() {
 
     if (operation == '=') {
       // Merge the two union sets
-      unionMerge(a, b, unions);
+      UnionFind::unionMerge(a, b, unions);
     } else if (operation == '?') {
       // Check if the two elements are in the same set
-      if (same(a, b, unions)) {
+      if (UnionFind::same(a, b, unions)) {
         std::cout << "yes\n";
       } else {
         std::cout << "no\n";
