@@ -23,29 +23,8 @@ struct Interval {
   int index;
 };
 
-// read an interval from the terminal
-Interval readInterval(int const index) {
-  double lower, upper;
-  if (!(std::cin >> lower >> upper)) {
-    return Interval{ 0, 0, END_OF_INPUT  };
-  }
-  return Interval{ lower, upper, index };
-}
-
 // solving a test case. Here is where the algorithm is implemented
-bool solveTestcase() {
-  Interval mainInterval{ readInterval(-1) };
-  if (mainInterval.index == END_OF_INPUT) {
-    return false;
-  }
-
-  std::vector<Interval> intervals;
-  int numberOfIntervals;
-  std::cin >> numberOfIntervals;
-  for (int i = 0; i < numberOfIntervals; i++) {
-    intervals.push_back(readInterval(i));
-  }
-  intervals.push_back(Interval{ INF, INF, numberOfIntervals });
+std::vector<int> intervalSolver(std::vector<Interval>& intervals, Interval& mainInterval) {
 
   // sort on starting point
   auto comparator = [](Interval const& interval1, Interval const& interval2){ return interval1.lower < interval2.lower; };
@@ -59,8 +38,7 @@ bool solveTestcase() {
   while (true) {
     // check if interval covers start
     if (intervals[index].lower > mainInterval.lower) {
-      std::cout << "impossible\n";
-      return true;
+      return {};
     } 
     // find biggest covering of start, since they are ordered of start, just iterate until the 
     // last one covering start
@@ -86,19 +64,48 @@ bool solveTestcase() {
       break;
     }
   }
-  // found optimal solution, print it out
-  std::cout << chosenIndexes.size() << "\n";
-  for (auto index : chosenIndexes) {
-    std::cout << index << " ";
-  }
-  std::cout << "\n";
 
-  return true;
+  return chosenIndexes;
+}
+
+// read an interval from the terminal
+Interval readInterval(int const index) {
+  double lower, upper;
+  if (!(std::cin >> lower >> upper)) {
+    return Interval{ 0, 0, END_OF_INPUT  };
+  }
+  return Interval{ lower, upper, index };
 }
 
 int main() {
   std::ios::sync_with_stdio(false);
   std::cin.tie(NULL);
   
-  while (solveTestcase()) {}
+  while (true) {
+    Interval mainInterval{ readInterval(-1) };
+    if (mainInterval.index == END_OF_INPUT) {
+      break;
+    }
+
+    std::vector<Interval> intervals;
+    int numberOfIntervals;
+    std::cin >> numberOfIntervals;
+    for (int i = 0; i < numberOfIntervals; i++) {
+      intervals.push_back(readInterval(i));
+    }
+    intervals.push_back(Interval{ INF, INF, numberOfIntervals });
+
+    std::vector<int> chosenIndexes = intervalSolver(intervals, mainInterval);
+
+    if (chosenIndexes.empty()) {
+      std::cout << "impossible\n";
+    } else {
+      // found optimal solution, print it out
+      std::cout << chosenIndexes.size() << "\n";
+      for (auto index : chosenIndexes) {
+        std::cout << index << " ";
+      }
+      std::cout << "\n";
+    }
+  }
 }
