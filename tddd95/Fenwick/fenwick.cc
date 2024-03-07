@@ -12,27 +12,35 @@
 #include <iostream>
 #include <vector>
 
-// adds delta to index and all its parent nodes
-void add(std::vector<long> &fenwickTree, int index, int const delta) {
-  index++;
-  while (index < (int)fenwickTree.size()) {
-    fenwickTree[index] += delta;
-    // get parent node (going upwards in the tree)
-    index += index & -index;
-  }
-}
+class Fenwick {
+public:
+  // the fenwick tree is 1 element longer because we don't use index 0 (it's a dummy node)
+  Fenwick(int const size) : fenwickTree(size + 1, 0) {}
 
-// returns sum of values from 0 to index
-long long sum(std::vector<long> const& fenwickTree, int index) {
-  index++;
-  long long sum = 0;
-  while (index > 0) {
-    sum += fenwickTree[index];
-    // get parent node (going downwards in the tree)
-    index -= index & -index;
+  // adds delta to index and all its parent nodes
+  void add(int index, int const delta) {
+    index++;
+    while (index < (int)fenwickTree.size()) {
+      fenwickTree[index] += delta;
+      // get parent node (going upwards in the tree)
+      index += index & -index;
+    }
   }
-  return sum;
-}
+
+  // returns sum of values from 0 to index
+  long long sum(int index) const {
+    index++;
+    long long sum = 0;
+    while (index > 0) {
+      sum += fenwickTree[index];
+      // get parent node (going downwards in the tree)
+      index -= index & -index;
+    }
+    return sum;
+  }
+private:
+  std::vector<long> fenwickTree;
+};
 
 int main() {
   std::ios::sync_with_stdio(false);
@@ -41,8 +49,7 @@ int main() {
   unsigned lengthOfArray, numberOfOperations;
   std::cin >> lengthOfArray >> numberOfOperations;
 
-  // the fenwick tree is 1 element longer because we don't use index 0 (it's a dummy node)
-  std::vector<long> fenwickTree(lengthOfArray + 1, 0);
+  Fenwick fenwick = Fenwick(lengthOfArray);
 
   for (unsigned i = 0; i < numberOfOperations; i++) {
     char operation;
@@ -53,10 +60,10 @@ int main() {
       // append value to index i
       int delta;
       std::cin >> delta;
-      add(fenwickTree, index, delta);
+      fenwick.add(index, delta);
     } else if (operation == '?') {
       // print sum of values from 0 to index i
-      std::cout << sum(fenwickTree, index - 1) << "\n";
+      std::cout << fenwick.sum(index - 1) << "\n";
     }
   }
 }

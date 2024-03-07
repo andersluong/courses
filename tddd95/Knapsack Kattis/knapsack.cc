@@ -2,6 +2,9 @@
 * This is the classical knapsack problem. This is solved using dynamic programming with a 2D array where the columns are 
 * the weight and the rows are the items. The valueMap[i][j] represents the maximum value that can be obtained with the
 * first i items. 
+* The time complexity is O(n * W) where n is the number of items and W is the total capacity.
+* The space complexity is O(n * W) where n is the number of items and W is the total capacity. This is because we are building
+* up a 2D array with n * W elements.
 * Source of inspiration: https://www.geeksforgeeks.org/0-1-knapsack-problem-dp-10/
 *
 * Author: Anders Luong

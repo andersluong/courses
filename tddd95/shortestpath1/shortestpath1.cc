@@ -1,6 +1,7 @@
 /**
 * This uses Dijkstra's algorithm to find the shortest path from a start node to all other nodes in a graph.
 * The time complexity is O((V + E) * log(V)) where V is the number of vertices and E is the number of edges.
+* The log(V) comes from the priority queue for sorting the shortest costs.
 * The solution to this problem is heavily inspired by lab 8 from the course TDDD86.
 *
 * Author: Anders Luong (andlu434)

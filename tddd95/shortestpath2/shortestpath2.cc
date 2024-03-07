@@ -2,6 +2,7 @@
 * This uses Dijkstra's algorithm to find the shortest path from a start node to all other nodes in a graph.
 * Almost the same as shortest path 1, but with added logic for waiting time.
 * The time complexity is O((V + E) * log(V)) where V is the number of vertices and E is the number of edges.
+* The log(V) comes from the priority queue for sorting the shortest costs.
 * The solution to this problem is heavily inspired by lab 8 from the course TDDD86.
 *
 * Author: Anders Luong (andlu434)
@@ -13,12 +14,29 @@
 #include <map>
 #include <algorithm>
 
+static const int INF = 1e9;
+
 // An edge representing a connection between two nodes
 struct Edge {
   int weight; // d
   int toNode; // v
   int startTime; // t0
   int P; // P
+
+  int waitingTime(int const nodeCost) const {
+    int addedWaitTime = 0; 
+    if (nodeCost <= startTime) {
+      // to access the neighbor, we need to wait since the start time hasn't started yet
+      addedWaitTime = startTime - nodeCost;
+    } else if (P == 0) {
+      // this node cannot be accesed anymore
+      return INF;
+    } else if ((nodeCost - startTime) % P > 0) {
+      // we need to wait for the next time slot to access the neighbor
+      addedWaitTime = P - ((nodeCost - startTime) % P);
+    }
+    return addedWaitTime;
+  }
 };
 
 // A node representing a vertex in the graph
@@ -131,18 +149,7 @@ void dijkstra(Graph &graph, Node* const startNode) {
       }
 
       // Added logic for waiting time
-      int addedWaitTime = 0;
-      if (currentNode->getCost() <= edge->startTime) {
-        // to access the neighbor, we need to wait since the start time hasn't started yet
-        addedWaitTime = edge->startTime - currentNode->getCost();
-      } else if (edge->P == 0) {
-        // this node cannot be accesed anymore
-        continue;
-      } else if ((currentNode->getCost() - edge->startTime) % edge->P > 0) {
-        // we need to wait for the next time slot to access the neighbor
-        addedWaitTime = edge->P - ((currentNode->getCost() - edge->startTime) % edge->P);
-      }
-
+      int addedWaitTime = edge->waitingTime(currentNode->getCost());
       int newDistance = currentNode->getCost() + edge->weight + addedWaitTime;
       if (neighbor->getCost() == -1 || newDistance < neighbor->getCost()) {
         neighbor->setCost(newDistance);

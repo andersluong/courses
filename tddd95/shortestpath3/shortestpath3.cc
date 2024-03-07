@@ -1,6 +1,7 @@
 /**
 * This uses Bellman-Ford algorithm to find the shortest path from a start node to all other nodes in a graph.
-* The time complexity is O(V*E) where V is the number of vertices and E is the number of edges.
+* The time complexity is O(V*E) where V is the number of vertices and E is the number of edges since
+* we loop through all edges V-1 times.
 * Source of inspiration: https://www.geeksforgeeks.org/bellman-ford-algorithm-dp-23/
 *
 * Author: Anders Luong (andlu434)
