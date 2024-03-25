@@ -1,0 +1,14 @@
+template <typename... Ts>
+void test(Ts... lista) {
+    test_helper(lista...);
+}
+
+template <typename First, typename... Rest>
+void test_helper(First first, Rest... rest) {
+    test_helper(rest...)
+}
+
+template <>
+void test_helper() {
+    
+}
