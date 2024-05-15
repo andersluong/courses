@@ -1,4 +1,9 @@
 /**
+* This program does simple arithmetic operations on rational numbers. The time complexity
+* of the arithmetic operations is O(log(n)) where n is the maximum of the nominator and
+* denominator. The compare operations are in O(1). The space complexity is O(1) since 
+* we only store the nominator and denominator.
+* 
 * Author: Anders Luong (andlu434)
 */
 #include <iostream>
